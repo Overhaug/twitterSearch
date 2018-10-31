@@ -115,4 +115,12 @@ dmypy.json
 
 # Data
 .data
+<<<<<<< HEAD
 data/
+=======
+data/
+
+# Configs
+.configs
+configs/
+>>>>>>> 807c7ea
