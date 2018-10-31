@@ -1,5 +1,6 @@
 import tweepy
 import csv
+import json
 from configs import config
 
 
@@ -7,6 +8,11 @@ auth = tweepy.OAuthHandler(config.apiKey, config.secretKey)
 auth.set_access_token(config.token, config.secretToken)
 
 api = tweepy.API(auth)
+
+# Dict to store geocodes
+GEOCODE = {
+    "Bergen": "60.3652817,5.2890912,50km",
+}
 
 
 # inherits from streamListener
@@ -23,24 +29,40 @@ class CustomStreamListener(tweepy.StreamListener):
         # if True, reconnects the stream
 
 
-def write_data():
-    with open('data/data.csv', mode="w", encoding="utf-8") as twitter_data:
-        data_writer = csv.writer(twitter_data, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        data_writer.writerow(result)
+# Define search by geocode
+def search():
+    tweets = []
+    for tweet in tweepy.Cursor(api.search, q="*", count=100, geocode=GEOCODE.get("Bergen")).items(100):
+        print(tweet.created_at, '|', tweet.text, '|', tweet.user.name, '|', tweet.place if tweet.place else "Undefined"
+                                                                                                            " place")
+        tweetz = {
+                'tweet': [
+                    {
+                        'tweet_date': str(tweet.created_at),
+                        'tweet_text': str(tweet.text),
+                        'tweet_user_name': str(tweet.user.name),
+                        'tweet_location': str(tweet.user.name),
+                    }]
+            }
+
+        tweets.append(tweetz)
+
+    return tweets
 
 
-def define_location():
-    for tweet in tweepy.Cursor(api.search, q="*", count=5, geocode="60.3652817,5.2890912,50km").items(5):
-        print(tweet.created_at, "|", tweet.user.name, "|", tweet.text, "|",
-              tweet.place.name if tweet.place else "Undefined place")
-        r = tweet.created_at, tweet.user.name, tweet.text, tweet.place.name if tweet.place else "Undefined place"
-        result.append(r)
-    write_data()
+def dump_json(tweets):
+    with open("data/json_data.json", "w") as write_file:
+        json.dump(tweets, write_file, indent=4)
 
 
 thisStreamListener = CustomStreamListener()
 thisStream = tweepy.Stream(auth=api.auth, listener=thisStreamListener)
 
-result = []
+# thisStream.filter(track=['#trump'], async=True)
 
-define_location()
+result = search()
+
+dump_json(result)
+
+# , "|", tweet.user.name, "|", tweet.text, "|",
+#              tweet.place.name if tweet.place else "Undefined place"
