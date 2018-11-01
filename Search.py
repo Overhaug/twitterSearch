@@ -1,9 +1,12 @@
+# coding=utf-8
+
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import time
 import random
 import json
+import time
 from configs import config
 
 consumer_key = config.apiKey
@@ -18,7 +21,6 @@ XY = []
 tweets = {
             'tweets': []
         }
-
 
 # Listener handles incoming tweets from stream, inserts tweets to JSON format
 class StdOutListener(StreamListener):
@@ -39,36 +41,44 @@ class StdOutListener(StreamListener):
             # print("X: ", XY[0])
             # print("Y: ", XY[1])
             pass
+
+        # Convert datetime object
+        status.created_at = status.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Filter out retweets
         if (not status.retweeted) and ('RT @' not in status.text):
+            # If there's a user-added location, use it
             if status.user.location is not None:
                 tweets['tweets'].append({
                     'tweet': [
                         {
-                            'tweet_date': str(status.created_at),
-                            'tweet_text': str(status.text),
-                            'tweet_user_name': str(status.user.name),
+                            'tweet_date': status.created_at,
+                            'tweet_text': status.text,
+                            'tweet_user_name': status.user.name,
                             'tweet_location': status.user.location,
                         }
                     ]
                 })
                 dump_json(tweets)
+            # If not, then long-lat
             else:
                 tweets['tweets'].append({
                     'tweet': [
                         {
-                            'tweet_date': str(status.created_at),
-                            'tweet_text': str(status.text),
-                            'tweet_user_name': str(status.user.name),
-                            'tweet_location': str(XY),
+                            'tweet_date': status.created_at,
+                            'tweet_text': status.text,
+                            'tweet_user_name': status.user.name,
+                            'tweet_location': XY,
                         }
                     ]
                 })
                 dump_json(tweets)
 
 
-def dump_json(tweets):
-    with open("data/json_data.json", "w", encoding="utf8") as write_file:
-        json.dump(tweets, write_file, indent=4)
+def dump_json(tweet_data):
+    with open("data/json_data.json", "w", encoding="utf-8") as write_file:
+        json.dump(tweet_data, write_file, indent=4, ensure_ascii=False)
+        write_file.close()
 
 
 def main():
@@ -80,9 +90,9 @@ def main():
     while True:
         try:
             # Call tweepy's userstream method
-            # Filter on location OR keyword
-            stream.filter(locations=[-5.0800, 5.4100, 60.3200, 60.1000],
-                          async=False)  # Approx. bounding box of Bergen
+            print("searching..")
+            stream.filter(locations=[-126.3,29.2,-72.4,49.2], async=False)  # Approx. bounding box of Bergen
+            print("searching")
             # stream.filter(track=['trump'])
             break
         except Exception:
@@ -93,3 +103,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+geo = [60.1033, 5.0840, 60.3209, 5.4112]
+
+geo2= [5.064945, 60.241243,  5.443305, 60.528346]
