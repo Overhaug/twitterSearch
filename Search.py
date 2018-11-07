@@ -8,6 +8,7 @@ import random
 import json
 import time
 from configs import config
+from collections import Counter
 
 consumer_key = config.apiKey
 consumer_secret = config.secretKey
@@ -22,16 +23,17 @@ tweets = {
             'tweets': []
         }
 
+
 # Listener handles incoming tweets from stream, inserts tweets to JSON format
 class StdOutListener(StreamListener):
     def on_status(self, status):
-        print(status.text)
+        # print(status.text)
         # print "Time Stamp: ",status.created_at
         try:
             Coords.update(status.coordinates)
             XY = (Coords.get('coordinates'))  # XY - coordinates
-            print("X: ", XY[0])
-            print("Y: ", XY[1])
+            # print("X: ", XY[0])
+            # print("Y: ", XY[1])
         except:
             # Often times users opt into 'place' which is neighborhood size polygon
             # Calculate center of polygon
@@ -46,23 +48,23 @@ class StdOutListener(StreamListener):
         status.created_at = status.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
         # Filter out retweets
-        if (not status.retweeted) and ('RT @' not in status.text):
-            # If there's a user-added location, use it
-            if status.user.location is not None:
+        if not status.retweeted:
+            if status.truncated:
                 tweets['tweets'].append({
+                    'tweet_id': status.id,
                     'tweet': [
                         {
                             'tweet_date': status.created_at,
-                            'tweet_text': status.text,
+                            'tweet_text': status.extended_tweet['full_text'],
                             'tweet_user_name': status.user.name,
-                            'tweet_location': status.user.location,
+                            'tweet_location': XY,
                         }
                     ]
                 })
                 dump_json(tweets)
-            # If not, then long-lat
             else:
                 tweets['tweets'].append({
+                    'tweet_id': status.id,
                     'tweet': [
                         {
                             'tweet_date': status.created_at,
@@ -85,14 +87,13 @@ def main():
     l = StdOutListener()
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    stream = Stream(auth, l, timeout=30.0)
+    stream = Stream(auth, l, tweet_mode="extended", timeout=30.0)
     # Only records 'locations' OR 'tracks', NOT 'tracks (keywords) with locations'
     while True:
         try:
             # Call tweepy's userstream method
             print("searching..")
-            stream.filter(locations=[-126.3,29.2,-72.4,49.2], async=False)  # Approx. bounding box of Bergen
-            print("searching")
+            stream.filter(locations=[-125.6,31.2,-64.4,49.3], async=False)  # Approx. bounding box of Bergen
             # stream.filter(track=['trump'])
             break
         except Exception:
@@ -101,10 +102,16 @@ def main():
             time.sleep(nsecs)
 
 
+bergen = [60.1033, 5.0840, 60.3209, 5.4112]
+
+california = [-124.48,32.53,-114.13,42.01]
+
+usa = [-125.6,31.2,-64.4,49.3]
+
+norway = [4.58,57.85,12.75,64.34]
+
 if __name__ == '__main__':
     main()
 
 
-geo = [60.1033, 5.0840, 60.3209, 5.4112]
 
-geo2= [5.064945, 60.241243,  5.443305, 60.528346]
