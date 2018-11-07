@@ -32,7 +32,7 @@ class CustomStreamListener(tweepy.StreamListener):
 # Define search by geocode
 def search():
     tweets = []
-    for tweet in tweepy.Cursor(api.search, q="*", count=100, geocode=GEOCODE.get("Bergen")).items(100):
+    for tweet in tweepy.Cursor(api.search, q="*", count=200, geocode=GEOCODE.get("Bergen")).items(200):
         print(tweet.created_at, '|', tweet.text, '|', tweet.user.name, '|', tweet.place if tweet.place else "Undefined"
                                                                                                             " place")
         tweetz = {

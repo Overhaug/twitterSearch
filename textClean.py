@@ -13,17 +13,11 @@ df.head(10)
 texts = df["tweet_text"].head(10)
 texts.head(10)
 
-from nltk.tokenize import TweetTokenizer
-tknzr = TweetTokenizer(strip_handles=True, reduce_len=True)
-joinedTweets = ''.join(texts)
-tknzr.tokenize(joinedTweets)
-
 # Create count numbers of hastags used in each tweet.
 df['hastags'] = df['tweet_text'].apply(lambda x: len([x for x in x.split() if x.startswith('#')]))
 df[['tweet_text','hastags']].head()
 df['hastags'].max()
-df["hastags"]
-
+df["hastags"].count()
 
 
 #_____________ TextCleaning__________________
@@ -51,3 +45,26 @@ freq
 # Library to combine words that are not spelled correct.
 from textblob import TextBlob
 df['tweet_text'][:5].apply(lambda x: str(TextBlob(x).correct()))
+
+
+df["tweet_text"].head(100)
+
+# Stemming, removing suffices, brave and bravly is looked at as the same.
+#from nltk.stem import PorterStemmer
+#st = PorterStemmer() # Antar denne er ment for engelske ord.
+#df['tweet_text'][:5].apply(lambda x: " ".join([st.stem(word) for word in x.split()]))
+
+# Lemmatization, Tries to reduce the words to its root word, rather then drop the ending of it.
+from textblob import Word
+#nltk.download("wordnet")
+
+df['tweet_text'] = df['tweet_text'].apply(lambda x: " ".join([Word(word).lemmatize() for word in x.split()]))
+df['tweet_text'].head(10)
+
+# Tokenize word list
+from nltk.tokenize import TweetTokenizer
+tknzr = TweetTokenizer(strip_handles=True, reduce_len=True)
+joinedTweets = ''.join(df["tweet_text"])
+tknzr.tokenize(joinedTweets)
+
+df["tweet_text"][0]
