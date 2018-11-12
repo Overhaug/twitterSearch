@@ -13,11 +13,6 @@ df.head(10)
 texts = df["tweet_text"].head(10)
 texts.head(10)
 
-# Create count numbers of hastags used in each tweet.
-df['hastags'] = df['tweet_text'].apply(lambda x: len([x for x in x.split() if x.startswith('#')]))
-df[['tweet_text','hastags']].head()
-df['hastags'].max()
-df["hastags"].count()
 
 
 #_____________ TextCleaning__________________
@@ -29,6 +24,35 @@ df['tweet_text'].head()
 df['tweet_text'] = df['tweet_text'].str.replace('[^\w\s]','')
 df['tweet_text'].head()
 
+
+# Create count numbers of hastags used in each tweet.
+df['hastags'] = df['tweet_text'].apply(lambda x: len([x for x in x.split() if x.startswith('#')]))
+df[['tweet_text','hastags']].head()
+df['hastags'].max()
+df["hastags"].sum()
+
+# Filter by keyword
+keyword = "trump"
+df['keyword'] = df['tweet_text'].apply(lambda x: len([x for x in x.split() if x.startswith(keyword)]))
+df[['keyword']].head()
+
+keywordDf = df[(df['keyword'] >= 1)]
+keywordDf["keyword"].head()
+keywordDf["keyword"].max()
+
+keyword_json = keywordDf.to_json(orient='values')
+
+
+def dump_json2(tweets, file):
+    with open(file, "w") as write_file:
+        json.dump(tweets, write_file, indent=4)
+
+dump_json2(keyword_json, "data/keyword_json.json")
+
+
+
+
+#______More Text cleaning____________
 # Remove stopwords
 #from nltk.corpus import stopwords
 #stop = stopwords.words('english')
@@ -68,3 +92,4 @@ joinedTweets = ''.join(df["tweet_text"])
 tknzr.tokenize(joinedTweets)
 
 df["tweet_text"][0]
+
