@@ -3,12 +3,11 @@
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-import time
 import random
 import json
 import time
+import atexit
 from configs import config
-from collections import Counter
 
 consumer_key = config.apiKey
 consumer_secret = config.secretKey
@@ -20,15 +19,13 @@ Coords = dict()
 XY = []
 
 tweets = {
-            'tweets': []
-        }
+           'tweets': []
+       }
 
 
-# Listener handles incoming tweets from stream, inserts tweets to JSON format
+# Listener handles incoming tweets from stream, passes JSON objects to dict
 class StdOutListener(StreamListener):
     def on_status(self, status):
-        # print(status.text)
-        # print "Time Stamp: ",status.created_at
         try:
             Coords.update(status.coordinates)
             XY = (Coords.get('coordinates'))  # XY - coordinates
@@ -44,7 +41,7 @@ class StdOutListener(StreamListener):
             # print("Y: ", XY[1])
             pass
 
-        # Convert datetime object
+        # Convert datetime object to string
         status.created_at = status.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
         # Filter out retweets
@@ -61,7 +58,7 @@ class StdOutListener(StreamListener):
                         }
                     ]
                 })
-                dump_json(tweets)
+                # dump_json(tweets)
             else:
                 tweets['tweets'].append({
                     'tweet_id': status.id,
@@ -74,13 +71,7 @@ class StdOutListener(StreamListener):
                         }
                     ]
                 })
-                dump_json(tweets)
-
-
-def dump_json(tweet_data):
-    with open("data/json_data.json", "w", encoding="utf-8") as write_file:
-        json.dump(tweet_data, write_file, indent=4, ensure_ascii=False)
-        write_file.close()
+                # dump_json(tweets)
 
 
 def main():
@@ -104,14 +95,21 @@ def main():
 
 bergen = [60.1033, 5.0840, 60.3209, 5.4112]
 
-california = [-124.48,32.53,-114.13,42.01]
+california = [-124.48, 32.53, -114.13, 42.01]
 
-usa = [-125.6,31.2,-64.4,49.3]
+usa = [-125.6, 31.2, -64.4, 49.3]
 
-norway = [4.58,57.85,12.75,64.34]
+norway = [4.58, 57.85, 12.75, 64.34]
+
+
+def exit_handler():
+    with open("data/json_data.json", "w", encoding="utf-8") as write_file:
+        json.dump(tweets, write_file, indent=4, ensure_ascii=False)
+        write_file.close()
+
+
+atexit.register(exit_handler)
+
 
 if __name__ == '__main__':
     main()
-
-
-

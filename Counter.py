@@ -10,4 +10,4 @@ with open("data/json_data.json", "r", encoding="utf-8") as read_file:
     for k in x['tweets']:
         if 'tweet' in k:
             result += 1
-            print(result)
+    print(result)
