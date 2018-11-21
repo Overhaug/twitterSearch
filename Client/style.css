@@ -1,0 +1,21 @@
+/* General styling */
+*{
+	font-family: Quicksand;
+}
+
+body{
+	margin: 0px;
+	padding: 0px;
+}
+
+h1 {
+	text-align: center;
+}
+
+/*********************************
+/* Map Styling */
+#map {
+	margin: 0 auto 0 auto;
+	height: 50%;
+	width: 90%;
+}
