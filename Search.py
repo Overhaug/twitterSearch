@@ -22,7 +22,7 @@ tweets = {
         }
 
 BagOfWords = ['help', 'magnitude', 'richter', 'earthquake', 'quake', 'san andreas fault', 'epicentre', 'seismic',
-              'tremor', 'temblor', 'trump', 'hello']
+              'tremor', 'temblor']
 
 
 # Listener handles incoming tweets from stream, filters and passes data to dict as JSON serializable
