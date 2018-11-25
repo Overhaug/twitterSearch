@@ -1,4 +1,6 @@
 # coding=utf-8
+# Twitter streaming
+#
 
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
@@ -6,7 +8,6 @@ from tweepy import Stream
 import random
 import json
 import time
-import csv
 from configs import config
 
 consumer_key = config.apiKey
@@ -21,8 +22,7 @@ tweets = {
             'tweets': []
         }
 
-BagOfWords = ['help', 'magnitude', 'richter', 'earthquake', 'quake', 'san andreas fault', 'epicentre', 'seismic',
-              'tremor', 'temblor']
+keyWordList = list()
 
 
 # Listener handles incoming tweets from stream, filters and passes data to dict as JSON serializable
@@ -32,7 +32,7 @@ class StdOutListener(StreamListener):
             Coords.update(status.coordinates)
             XY = (Coords.get('coordinates'))  # XY - coordinates
         except:
-            # If there are no XY coordinates, calculate center of polygon (geobox)
+            # If there are no XY coordinates, calculate center of polygon
             box = status.place.bounding_box.coordinates[0]
             XY = [(box[0][0] + box[2][0]) / 2, (box[0][1] + box[2][1]) / 2]
             pass
@@ -46,7 +46,7 @@ class StdOutListener(StreamListener):
         if status.lang == 'en':
             if not status.retweeted:
                 if status.truncated:
-                    for i in BagOfWords:
+                    for i in keyWordList[0]:
                         if i in status.extended_tweet['full_text'].lower():
                             tweets['tweets'].append(
                                 {
@@ -60,7 +60,7 @@ class StdOutListener(StreamListener):
                             dump_json(tweets)
                             break
                 else:
-                    for i in BagOfWords:
+                    for i in keyWordList[0]:
                         if i in status.text.lower():
                             tweets['tweets'].append(
                                 {
@@ -73,38 +73,6 @@ class StdOutListener(StreamListener):
                             )
                             dump_json(tweets)
                             break
-
-        # if status.truncated:
-        #     print('truncated')
-        #     if 'help' in str(status.text):
-        #             if status.lang == 'en':
-        #                 if not status.retweeted:
-        #                     if status.truncated:
-        #                         tweets['tweets'].append({
-        #                             'tweet_id': status.id,
-        #                             'tweet': [
-        #                                 {
-        #                                     'tweet_date': status.created_at,
-        #                                     'tweet_text': status.extended_tweet['full_text'],
-        #                                     'tweet_user_name': status.user.name,
-        #                                     'tweet_location': XY,
-        #                                 }
-        #                             ]
-        #                         })
-        #                         dump_json(tweets)
-        #                     else:
-        #                         tweets['tweets'].append({
-        #                             'tweet_id': status.id,
-        #                             'tweet': [
-        #                                 {
-        #                                     'tweet_date': status.created_at,
-        #                                     'tweet_text': status.text,
-        #                                     'tweet_user_name': status.user.name,
-        #                                     'tweet_location': XY,
-        #                                 }
-        #                             ]
-        #                         })
-        #                         dump_json(tweets)
 
 
 # dumps dict tweets as json to file
@@ -122,32 +90,19 @@ def main():
     stream = Stream(auth, l, tweet_mode="extended", timeout=30.0)
     while True:
         try:
-            # Call tweepy's userstream method
+            # Enter (optional) keyword(s) and call tweepy's userstream method
+            keyword = input('Optional: Enter keyword(s), separated by single comma and space, i.e: earthquake, '
+                            'roadblock. If no keywords, press enter \n -> ')
+            keyWordList.append(keyword.split(', '))
             print("searching..")
-            stream.filter(locations=[-124.48, 32.53, -114.13, 42.01], async=False)
+            stream.filter(locations=[-125.63,24.96,-66.39,49.31], async=False)
             break
         except Exception:
             nsecs = random.randint(60, 63)
             time.sleep(nsecs)
 
 
-bergen = [60.1033, 5.0840, 60.3209, 5.4112]
-
 california = [-124.48, 32.53, -114.13, 42.01]
-
-usa = [-125.6, 31.2, -64.4, 49.3]
-
-norway = [4.58, 57.85, 12.75, 64.34]
-
-
-#def exit_handler():
-#    with open("data/json_data.json", "w", encoding="utf-8") as write_file:
-#        json.dump(tweets, write_file, indent=4, ensure_ascii=False)
-#        write_file.close()
-
-
-# atexit.register(exit_handler)
-
 
 
 # Starts script
