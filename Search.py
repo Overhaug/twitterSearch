@@ -1,6 +1,7 @@
 # coding=utf-8
 # Twitter streaming
-#
+# Allows for geobox-specification and searching for keywords
+# Filters out retweets and non-English tweets
 
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
@@ -18,6 +19,7 @@ access_token_secret = config.secretToken
 
 Coords = dict()
 XY = []
+
 tweets = {
             'tweets': []
         }
@@ -43,10 +45,12 @@ class StdOutListener(StreamListener):
         # Filters only English tweets; filters out retweets, checks if tweet is truncated or not,
         # and checks if tweet contains at least one of the words in BagOfWords list
         # Appends data to global dict tweets, and lastly uses dump_json function to write data to file
+        tweetz = {}
         if status.lang == 'en':
             if not status.retweeted:
                 if status.truncated:
                     for i in keyWordList[0]:
+                        # If there are no keywords, 'i' will always be True since it's only an empty string
                         if i in status.extended_tweet['full_text'].lower():
                             tweets['tweets'].append(
                                 {
@@ -61,6 +65,7 @@ class StdOutListener(StreamListener):
                             break
                 else:
                     for i in keyWordList[0]:
+                        # If there are no keywords, 'i' will always be True since it's only an empty string
                         if i in status.text.lower():
                             tweets['tweets'].append(
                                 {
@@ -79,7 +84,6 @@ class StdOutListener(StreamListener):
 def dump_json(tweet):
     with open('data/json_data.json', 'w', encoding='utf-8') as write_file:
         json.dump(tweet, write_file, indent=2, ensure_ascii=False)
-    write_file.close()
 
 
 # initializes stream, filters on geobox location (4 point coordinate)
@@ -93,17 +97,21 @@ def main():
             # Enter (optional) keyword(s) and call tweepy's userstream method
             keyword = input('Optional: Enter keyword(s), separated by single comma and space, i.e: earthquake, '
                             'roadblock. If no keywords, press enter \n -> ')
+            if len(keyword) > 0:
+                print('Searching for tweets related to', keyword)
+            else:
+                print("searching..")
             keyWordList.append(keyword.split(', '))
-            print("searching..")
-            stream.filter(locations=[-125.63,24.96,-66.39,49.31], async=False)
+            stream.filter(locations=[-124.48, 32.53, -114.13, 42.01], async=False, stall_warnings=True)
             break
         except Exception:
-            nsecs = random.randint(60, 63)
+            nsecs = random.randint(20, 30)
             time.sleep(nsecs)
 
 
-california = [-124.48, 32.53, -114.13, 42.01]
+# california = [-124.48, 32.53, -114.13, 42.01]
 
+# usa = [-126.9,25.6,-65.6,49.2]
 
 # Starts script
 if __name__ == '__main__':
