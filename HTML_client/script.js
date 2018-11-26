@@ -16,11 +16,9 @@ function initE_Cluster(){
 	initMarkerCluster(exampleCluster);
 }
 
-function initL_Raw(){
-	initMarkerMap(tweets);
-}
+
 function initL_Cluster(){
-	initMarkerCluster(cluster);
+	initMarkerCluster(tweets);
 }
 
  
