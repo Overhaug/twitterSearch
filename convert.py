@@ -1,26 +1,6 @@
-import json
-
-def jjson_convert():
-    with open('data/json_data.json', 'r', encoding='utf-8') as file:
-        jsonFile = json.load(file)
-
-        l = []
-        for i in jsonFile['tweets']:
-            l.append(i)
-
-        with open('data/js_d.json', 'w', encoding='utf-8') as write:
-            json.dump(l, write, ensure_ascii=False, indent=2)
-
-        # Open file, encoding for utf-8
-        src = open("data/js_d.json", "r", encoding="utf-8")
-        firstLine = "var tweets = "
-        oLine = src.readlines()
-        # Prepend string on first line
-        oLine.insert(0, firstLine)
-        src.close()
-
-        # Open file in write mode
-        src = open("data/js_d.json", "w", encoding="utf-8")
-        src.writelines(oLine)
-        src.close()
+def add_firstline(inputfile, line):
+    with open(inputfile, 'r+') as f:
+        content = f.read()
+        f.seek(0, 0)
+        f.write(line.rstrip('\r\n') + '\n' + content)
 
